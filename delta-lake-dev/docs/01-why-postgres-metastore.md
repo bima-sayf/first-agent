@@ -118,3 +118,38 @@ in one (Postgres: "where's this table and what's its schema?") and then goes and
 (filesystem: "read/write these Parquet files"). Because Postgres is a real multi-user database instead of
 a single Derby file, several of these embedded metastore clients can now open connections to it
 concurrently — which is the whole reason it replaced Derby in this project.
+## What happens if the metastore is lost but the data isn't
+
+Worth walking through deliberately, because this project's whole point — data files (`./data`) on one
+storage layer, compute + metastore (`metastore-db`) on another — means a compute-side disaster (the
+container host destroyed, `docker compose down -v`, a bad disk on the metastore's volume) can wipe the
+catalog while the Delta files sit untouched on their own storage.
+
+The short version: **this is recoverable, and cheaply, because of something specific to Delta.** A plain
+Hive table on raw Parquet genuinely loses information here — the metastore is the *only* place its schema
+and partition structure live, so losing it means reverse-engineering partitions from directory names and
+inferring a schema from whichever Parquet file happens to be readable. A Delta table doesn't have that
+problem: its schema, partitioning, and complete file listing all live in `_delta_log/`, which is *inside
+the table's own directory*, not in the metastore. The metastore only ever held a name → path pointer plus
+a cached copy of the schema for SQL convenience (see the walkthrough above) — convenience, not the source
+of truth.
+
+So losing the metastore means losing the ability to say `SELECT * FROM sandbox.orders` — not losing
+`sandbox.orders` itself. Recovery is: bring up an empty metastore (this project already does that
+automatically — `server/metastore-init/*.sql` seeds a fresh Hive schema into Postgres on first boot, see
+section 3), then re-point each table name at its already-complete directory:
+
+```sql
+CREATE DATABASE IF NOT EXISTS sandbox;
+CREATE TABLE sandbox.orders USING DELTA LOCATION '/home/spark/data/delta/warehouse/sandbox.db/orders';
+```
+
+No column list, no `PARTITIONED BY`, no `MSCK REPAIR TABLE` — Spark reads schema and partitioning
+straight out of `_delta_log`. This was tested directly against this project's own tables: after
+deliberately letting several tables drift out of the metastore, re-running `CREATE TABLE ... LOCATION`
+against each one recovered exact row counts, full schemas, and complete `DESCRIBE HISTORY` output,
+because none of that history ever lived anywhere but the log itself.
+
+The full recovery procedure — a script that re-attaches *every* table on disk in one pass, what does and
+doesn't survive, and how to stop this from being a scramble in the first place — is worked through in
+[`docs/06-failover-scenario-handling.md`](06-failover-scenario-handling.md).

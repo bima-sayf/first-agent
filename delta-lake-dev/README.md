@@ -339,10 +339,11 @@ the way they are:
 | Doc | Covers |
 |---|---|
 | [`docs/01-why-postgres-metastore.md`](docs/01-why-postgres-metastore.md) | What the Hive metastore actually stores (and doesn't), how Spark talks to Postgres underneath `.enableHiveSupport()`, and the schema-seeding gotcha from section 3 above in more depth |
-| [`docs/02-metastore-alternatives.md`](docs/02-metastore-alternatives.md) | Path-based tables, embedded Derby, embedded metastore + Postgres (what this project uses), standalone Hive Metastore Service, AWS Glue, Unity Catalog — tradeoffs and when to pick each |
+| [`docs/02-metastore-alternatives.md`](docs/02-metastore-alternatives.md) | Path-based tables, embedded Derby, embedded metastore + Postgres (what this project uses), a manifest-driven option, standalone Hive Metastore Service, AWS Glue, Unity Catalog — tradeoffs, when to pick each, and how each recovers if lost |
 | [`docs/03-ai-kitchen-architecture.md`](docs/03-ai-kitchen-architecture.md) | How this skeleton (server/client/shared + the catalog pattern) extends into a medallion-architecture data platform, if that's ever the direction |
 | [`docs/04-dockerfile-explained.md`](docs/04-dockerfile-explained.md) | `server/Dockerfile` walked through line by line — image/container/layer basics included, for anyone newer to Docker |
 | [`docs/05-manage-docker.md`](docs/05-manage-docker.md) | Cheat sheet for everyday `docker compose` commands (start/stop/logs/shell/reset) |
+| [`docs/06-failover-scenario-handling.md`](docs/06-failover-scenario-handling.md) | What survives if the metastore is destroyed but `../data` isn't, why it's recoverable, a tested re-registration script, what genuinely doesn't come back, and how to prevent it |
 
 `PROJECT-CONTEXT.md` is different from all of the above: it's the working-context file, covering
 diagnosed bugs, verified fixes, and gotchas hit while building this out. Read it before making changes to

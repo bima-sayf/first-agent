@@ -82,6 +82,14 @@ The associated location (...) is not empty and also not a Delta table.
 cd server && docker compose down -v && rm -rf ../data/* && docker compose up -d
 ```
 
+**If the metastore is destroyed but `../data` isn't** (the actual failover scenario, not a self-inflicted
+reset), the situation is recoverable rather than catastrophic — a Delta table's schema and partitioning
+live in its own `_delta_log/`, not in the metastore, so `CREATE TABLE ... LOCATION '<path>'` against each
+surviving table directory restores it with zero manual schema entry. Verified against this project's own
+tables (exact row counts, full 9-column schema, complete `DESCRIBE HISTORY` all recovered from a bare
+`LOCATION` clause) — full walkthrough, a bulk re-registration script, and what genuinely doesn't survive
+(view definitions, comments, `ANALYZE` stats) in `docs/06-failover-scenario-handling.md`.
+
 ## 4. The metastore schema must be seeded up front
 
 **Diagnosed and fixed.** Full write-up in `server/metastore-init/README.md`; the short version:
