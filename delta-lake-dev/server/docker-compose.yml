@@ -1,0 +1,65 @@
+services:
+  # ---- Hive metastore backend (replaces embedded Derby) --------------
+  # Postgres allows MULTIPLE Spark sessions/processes (the Jupyter kernel,
+  # the Spark Connect server, a pytest run, a second container, etc.) to
+  # share the same catalog concurrently - embedded Derby only allows one.
+  metastore-db:
+    image: postgres:16-alpine
+    container_name: delta-lake-metastore-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - metastore_pgdata:/var/lib/postgresql/data
+      # ---- Seed the Hive metastore schema on FIRST boot ----------------
+      # The postgres image runs every *.sql here once, in lexical order, and
+      # only while the data directory is still empty. This is what creates
+      # DBS/TBLS/SDS/... - Derby used to let Spark create them itself, but an
+      # external metastore is assumed by Spark to already have its schema, and
+      # this image has no `schematool` to build it (pyspark ships only Hive
+      # client jars). Without this, the first CREATE DATABASE/CREATE TABLE dies
+      # with 'Hive metastore database is not initialized' /
+      # 'Required table missing : "DBS"'. See metastore-init/README.md - and
+      # note that enabling datanucleus.schema.autoCreateAll instead DEADLOCKS.
+      - ./metastore-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No host port published on purpose - only spark-delta (on the compose
+    # network) can reach it. Not exposed to your Mac directly.
+
+  spark-delta:
+    build: .
+    container_name: delta-lake-dev
+    depends_on:
+      metastore-db:
+        condition: service_healthy
+    ports:
+      - "8888:8888"   # JupyterLab (VSCode remote-kernel connects here)
+      - "4040:4040"   # Spark UI (open in browser while a job runs)
+      - "15002:15002" # Spark Connect (local .py scripts on your Mac connect here)
+    volumes:
+      - ./notebooks:/home/spark/work         # your .ipynb files
+      - ../shared:/home/spark/src            # shared python modules (spark_session.py) - single source, also used by client/
+      - ./tests:/home/spark/tests            # server-side pytest suite
+      - ../data:/home/spark/data             # Delta table files (local filesystem, top-level so client/ can find it too)
+    environment:
+      - TZ=UTC
+      - METASTORE_HOST=metastore-db
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    # ---- Resource caps: tuned for a 16GB Apple Silicon Mac -------------
+    # Leaves headroom for macOS + VSCode + Docker Desktop's own overhead.
+    # NOTE: if you use the Jupyter kernel AND a local .py script (Spark
+    # Connect) AT THE SAME TIME, that's two JVMs running - bump this to
+    # ~10g if you hit OOM, or stick to one path at a time.
+    mem_limit: 8g
+    cpus: 4
+    shm_size: 1g
+
+volumes:
+  metastore_pgdata:

@@ -1,0 +1,11 @@
+# Installed into a .venv ON YOUR MAC (not inside Docker).
+# pyspark[connect] gives you a pure Python/gRPC client - it does NOT
+# require a local JVM or Java install, because it talks to the Spark
+# Connect server running inside the container over the network.
+#
+# IMPORTANT: keep this version identical to PYSPARK_VERSION in the
+# Dockerfile, or the client/server protocol can mismatch.
+pyspark[connect]==3.5.3
+python-dotenv==1.0.1
+pytest==8.3.3
+PyYAML==6.0.2

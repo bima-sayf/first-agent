@@ -1,0 +1,14 @@
+-- -----------------------------------------------------------------
+-- Record schema version. Should be the last step in the init script.
+--
+-- Split out of 01-hive-schema.sql (upstream Hive keeps this at the very end
+-- of hive-schema-2.3.0.postgres.sql, after the \i include of the txn schema).
+-- Because the include had to be replaced by a separate 02-*.sql file here,
+-- this INSERT was moved into its own 03-*.sql so it still runs last.
+--
+-- Spark 3.5.3 talks to the metastore with hive-metastore-2.3.9.jar, whose
+-- expected schema version is 2.3.0 - so this value must stay 2.3.0 and must
+-- match the schema created by 01/02. If you ever bump Spark's bundled Hive
+-- client, re-pull the matching hive-schema-<ver>.postgres.sql scripts.
+-- -----------------------------------------------------------------
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '2.3.0', 'Hive release version 2.3.0');

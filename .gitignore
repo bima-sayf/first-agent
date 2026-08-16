@@ -1,0 +1,51 @@
+# =========================================================================
+# Repo-wide ignores. Project-specific ignores (e.g. delta-lake-dev/data/*)
+# live in each project's own .gitignore - this file covers things that show
+# up anywhere in the workspace.
+# =========================================================================
+
+# ---- Experimental / superseded project versions -----------------------
+# v_0.11, v_0.12, etc. are scratch iterations that predate delta-lake-dev,
+# never committed, and not meant to be pushed. Matches any v_0.<n>/ folder
+# at the repo root so a new one doesn't need a .gitignore edit later.
+v_*.*/
+
+# ---- Python virtualenvs -------------------------------------------------
+.venv/
+venv/
+env/
+
+# ---- Python bytecode / caches ------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Jupyter ------------------------------------------------------------
+.ipynb_checkpoints/
+
+# ---- Secrets / environment files ---------------------------------------
+# Real per-project .env files (server/.env, etc.) are dev-only credentials
+# and must never be committed. .env.example files are intentionally NOT
+# ignored - keep those as templates.
+.env
+.env.*
+!.env.example
+
+# ---- Editor / IDE --------------------------------------------------------
+.vscode/
+.idea/
+
+# ---- OS cruft -------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ---- Data / warehouse scratch (repo-wide safety net) ---------------------
+# Each project (e.g. delta-lake-dev/.gitignore) ignores its own data/ folder
+# with a !.../.gitkeep exception already. This is a backstop for any FUTURE
+# project folder that forgets to add one - `**/` matches at any depth, unlike
+# a plain `data/*` which would only match a data/ folder at the repo root.
+**/data/*
+!**/data/.gitkeep

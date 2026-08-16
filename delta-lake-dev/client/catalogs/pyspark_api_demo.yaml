@@ -1,0 +1,67 @@
+# Catalog entry for scripts/pyspark_api_demo.py
+#
+# Sibling of example_client.yaml, but the script it drives expresses all logic
+# through the PySpark DataFrame API (pyspark.sql.functions / Window) instead of
+# SQL strings. Run it with:
+#
+#     python main.py --catalog pyspark_api_demo
+#
+# Everything the script touches is declared here - no table names, thresholds
+# or literals are hardcoded in the Python.
+
+database: sandbox
+
+source:
+  # Inline sample data standing in for a real extract. Typed explicitly by the
+  # script rather than inferred, so the schema is deterministic even though
+  # row 3's amount is null.
+  rows:
+    - order_id: 1
+      customer: alice
+      amount: 120.50
+      order_date: "2026-08-01"
+    - order_id: 2
+      customer: bob
+      amount: 75.00
+      order_date: "2026-08-02"
+    - order_id: 3
+      customer: carol
+      amount: null          # intentionally dirty -> exercises the null rule
+      order_date: "2026-08-02"
+    - order_id: 4
+      customer: alice
+      amount: 240.00
+      order_date: "2026-08-02"
+    - order_id: 5
+      customer: dave
+      amount: -15.00        # intentionally dirty -> exercises the negative rule
+      order_date: "2026-08-03"
+
+output:
+  # Row-level table holding only rows that passed validation.
+  clean_table: sandbox.orders_api_clean
+  # Rows rejected by the rules, kept (with a reason) rather than dropped, so bad
+  # data is inspectable instead of silently lost.
+  quarantine_table: sandbox.orders_api_quarantine
+  # Daily rollup built with groupBy/agg.
+  summary_table: sandbox.orders_api_daily
+  format: delta
+  # 'overwrite' keeps the script idempotent - rerunning does not duplicate rows.
+  mode: overwrite
+
+validation:
+  # A row must have all of these non-null AND amount >= min_amount to be clean.
+  require_non_null:
+    - customer
+    - amount
+    - order_date
+  min_amount: 0
+
+transform:
+  # Boundaries for the F.when(...) value_band bucketing.
+  high_value_threshold: 200
+  mid_value_threshold: 100
+  # Tax multiplier applied via a column expression.
+  tax_multiplier: 1.11
+  # "top N orders per day" via a Window row_number().
+  top_n_per_day: 2

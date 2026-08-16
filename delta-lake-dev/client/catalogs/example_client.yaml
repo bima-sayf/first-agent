@@ -1,0 +1,19 @@
+# Catalog entry for scripts/example_client.py
+# Loaded by main.py as `catalog` and passed into scripts/example_client.py's
+# run(catalog) function. Change values here to point the same script at a
+# different table/database without touching Python.
+
+database: sandbox
+
+output:
+  full_table_name: sandbox.local_client_check
+  format: delta
+  mode: append   # append | overwrite
+
+# Rows this demo script writes on each run (kept here so "what data does
+# this produce" is visible in the catalog, not buried in the script).
+sample_rows:
+  - id: 1
+    label: "written from local .venv"
+  - id: 2
+    label: "via Spark Connect"
