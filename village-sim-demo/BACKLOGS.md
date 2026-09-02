@@ -7,6 +7,31 @@
 
 ---
 
+## 📖 Story & Narrative Context
+
+**The Fall of the Kingdom**
+
+Nine loyal servants of the Kingdom of Aeradell were falsely accused of treason by the corrupt Chancellor. Branded as traitors, they were stripped of their titles, possessions, and cast into the wilderness beyond the borders. Abandoned with nothing but the clothes on their backs and a few tools, they found themselves on barren grassland, far from civilization.
+
+**The Nine Exiles**:
+- **Elin** (Farmer) - Former royal groundskeeper, knows the land
+- **Bram** (Baker) - Palace baker, still remembers the royal recipes
+- **Mira** (Healer) - Court physician, carries knowledge of herbs
+- **Oskar** (Blacksmith) - Royal armorer, lost his legendary forge
+- **Sana** (Merchant) - Royal treasurer, knows the value of everything
+- **Tobin** (Fisher) - Harbor master, dreams of the sea
+- **Greta** (Innkeeper) - Palace tavern keeper, heart of gold
+- **Finn** (Carpenter) - Master builder, designed the palace halls
+- **Ivy** (Teacher) - Royal librarian, keeper of knowledge
+
+**Their Oath**:
+On that first cold night, huddled around a makeshift campfire, they made an oath: *"We will rebuild. Not the kingdom that betrayed us, but something greater. A place where loyalty, hard work, and trust matter. Our kingdom."*
+
+**The Observer's Role**:
+You are the **Silent Chronicler**, a mystical entity that watches their journey. Each night, as they rest, time stops and you review their progress - their struggles, their triumphs, their growth. You witness the birth of a new kingdom from nothing.
+
+---
+
 ## 🎯 Development Phases Overview
 
 | Phase | Version | Focus | Complexity | Est. Duration |
@@ -1108,7 +1133,7 @@
 
 ## 📋 Phase 9: Advanced Observation UI (v1.0)
 
-**Goal**: Comprehensive inspection system for observing all simulation aspects
+**Goal**: Comprehensive inspection system for observing all simulation aspects + Daily Summary System
 
 ### Tasks
 
@@ -1118,8 +1143,48 @@
   - Drill-down: Click entity → open detailed panel
   - Live updates: Panels refresh with simulation state
   - Minimize/maximize: Panels can be collapsed
+  - **Daily Summary System**: End-of-day report with progression
 
-- [ ] **UX-083**: Implement villager inspector
+- [ ] **UX-082B**: Implement Daily Summary System ⭐ NEW
+  - **Day End Trigger**: Every 24 in-game hours (or configurable ticks)
+  - **Simulation Pause**: Automatically pause when day ends
+  - **Summary Screen**: Full-screen overlay with daily report
+  - **Navigation**: Browse through villagers, map progression, events
+  - **Historical Access**: Access any previous day's summary from menu
+  - **Resume**: Continue simulation from summary screen
+
+- [ ] **UX-082C**: Design Daily Summary UI ⭐ NEW
+  - **Main Screen**:
+    - Header: "Day 1 Complete - The First Night"
+    - Tabs: Overview | Villagers | Map | Events | Stats
+    - Navigation: Previous Day ← | → Next Day
+    - Button: "Continue to Day 2"
+  - **Overview Tab**:
+    - Day summary paragraph (generated from events)
+    - Key achievements (first shelter built, first meal cooked)
+    - Challenges faced (starved, exhausted, attacked)
+    - Resources gained/lost
+    - Mood indicator (struggling, surviving, thriving)
+  - **Villagers Tab**:
+    - 3×3 grid of villager cards
+    - Each card: Portrait, name, level, key stats
+    - "View Details" button per villager
+    - Highlight: Level ups, new skills, significant events
+  - **Map Tab**:
+    - Side-by-side: Day Start | Day End
+    - Show: Structures built, terrain changed, explored areas
+    - Highlight new buildings with glow effect
+    - Statistics: Tiles explored, structures built, resources gathered
+  - **Events Tab**:
+    - Timeline of major events (first building, combat, level up)
+    - Grouped by hour or significance
+    - Icons for event types
+  - **Stats Tab**:
+    - Village statistics (population, structures, resources)
+    - Graphs: Resource trends, XP gains
+    - Comparisons: Day-over-day changes
+
+- [ ] **UX-083**: Implement villager inspector (existing)
   - Header: Portrait, name, role, level
   - **Attributes tab**:
     - Display all 6 attributes with values
@@ -2044,4 +2109,301 @@ Future enhancements beyond core vision:
 **Last Updated**: 2026-09-02  
 **Status**: Complete backlog ready for implementation  
 **Total Tasks**: 140+ across 13 phases
+
+
+
+---
+
+## 📋 Phase 14: Story & Daily Summary System (v1.5) ⭐ NEW
+
+**Goal**: Implement narrative context and daily summary/progression system for observers
+
+### Tasks
+
+- [ ] **UX-141**: Implement story/lore system
+  - **Backstory Integration**:
+    - Opening cinematic/text: The betrayal and exile
+    - Introduce each of the 9 exiles with their backstory
+    - Display their oath: "We will rebuild..."
+    - Set narrative tone (hopeful despite hardship)
+  - **Villager Backstories**:
+    - Each villager has extended backstory in data
+    - References to their past (former palace roles)
+    - Personality influenced by betrayal
+    - Dreams/motivations (why they continue)
+  - **Narrative Events**:
+    - Triggered story moments (finding artifact from old kingdom)
+    - Memories triggered by actions (Bram baking = remembers palace)
+    - Optional: Revenge/redemption arc (confront betrayers later)
+
+- [ ] **UX-142**: Implement day/night cycle with day boundaries
+  - **Day Definition**: 24 in-game hours or configurable tick count
+  - **Day Counter**: Track current day (Day 1, Day 2, etc.)
+  - **Day Transition**:
+    - Detect when day ends (time reaches midnight)
+    - Trigger "End of Day" event
+    - Pause simulation automatically
+    - Generate daily summary data
+  - **Time Display**: Show "Day X - Hour Y" in UI
+
+- [ ] **UX-143**: Create Daily Summary data generator
+  - **Snapshot System**:
+    - Capture world state at day start (Day X 00:00)
+    - Capture world state at day end (Day X 23:59)
+    - Calculate differences (delta)
+  - **Per-Villager Summary**:
+    - Actions taken (count: worked X times, crafted Y items)
+    - XP gained, levels achieved
+    - Skills improved
+    - Relationships changed (who +affinity, who -affinity)
+    - Significant events (built something, combat, found item)
+    - Health status (injuries, hunger, exhaustion)
+    - Personal quote/thought (auto-generated or from memory)
+  - **Village Summary**:
+    - Structures built (list with images/icons)
+    - Resources gathered vs consumed
+    - Population health (average HP, hunger, energy)
+    - Major events (wolf attack, merchant visit, discovery)
+    - Map expansion (tiles explored)
+  - **Story Narrative**:
+    - Auto-generate narrative summary from events
+    - Example: "Day 1: The exiles awoke on barren land, cold and afraid. Elin and Finn worked together to build the first tent. Oskar gathered stone while Bram foraged for berries. As night fell, they huddled around a campfire, exhausted but alive. Tomorrow, they would need water."
+
+- [ ] **UX-144**: Design and implement Daily Summary UI
+  - **Trigger**: Show summary screen when day ends (automatic)
+  - **Screen Layout**:
+    - Full-screen overlay (dims game view)
+    - Header: "Day X Complete - [Narrative Title]"
+    - Tab navigation: Overview | Villagers | Map | Events | Stats
+    - Footer: [Previous Day] [Resume to Day X+1] [Next Day]
+  - **Overview Tab**:
+    - Story narrative paragraph (3-5 sentences)
+    - Key achievements with icons
+    - Challenges faced (deaths, starvation, attacks)
+    - Mood indicator: Emoji (😰 struggling → 😊 thriving)
+    - Quote of the day (from a villager)
+  - **Villagers Tab**:
+    - 3×3 grid of villager cards
+    - Each card:
+      - Portrait/avatar
+      - Name, level (with level up indicator if applicable)
+      - HP/Energy/Hunger bars (small)
+      - XP progress bar
+      - Key stat: Actions taken today
+      - Mood emoji
+      - "View Details" button
+    - Click card → open detailed villager summary modal
+  - **Detailed Villager Modal**:
+    - All inspector tabs (Attributes, Skills, Inventory, etc.)
+    - **Daily Journal**: Auto-generated summary
+      - "Elin's Day 1: Woke up hungry (hunger: 80). Built tent with Finn (+3 affinity). Gathered 15 wood. Crafted stone axe. Went to sleep exhausted but hopeful."
+    - Navigation: [Prev Villager] [Next Villager] [Close]
+  - **Map Tab**:
+    - Split view: Day Start | Day End
+    - Minimap showing:
+      - New structures (highlighted/glowing)
+      - Explored tiles (fog of war reveal)
+      - Resource deposits discovered
+    - Statistics:
+      - Structures: X built today
+      - Tiles explored: Y new tiles
+      - Resources gathered: Z total
+    - Click structure → show details
+  - **Events Tab**:
+    - Timeline of major events (vertical)
+    - Each event:
+      - Timestamp (Hour X)
+      - Icon (🔨 build, ⚔️ combat, 🎉 achievement)
+      - Description
+      - Involved villagers
+    - Categories: Achievements, Combat, Building, Social, Deaths
+    - Filter by category
+  - **Stats Tab**:
+    - Village-level statistics
+    - **Resources**: Chart showing resource gains/losses
+    - **Population Health**: Average HP, hunger, energy (line graph)
+    - **XP Distribution**: Who gained most XP
+    - **Relationships**: Net affinity changes
+    - **Comparisons**: Day-over-day deltas
+
+- [ ] **UX-145**: Implement historical summary browser
+  - **Access Point**: Menu button "Daily Summaries" or "Chronicle"
+  - **Summary List**:
+    - Scrollable list of all completed days
+    - Each entry: "Day X - [Title]" with thumbnail/preview
+    - Click to open that day's summary
+  - **Navigation**:
+    - Browse through any past day
+    - See how village progressed over time
+    - Compare different days (optional)
+  - **Search/Filter**:
+    - Search by villager name
+    - Filter by event type (building, combat, etc.)
+    - Jump to significant days (first building, first death)
+
+- [ ] **UX-146**: Implement summary persistence
+  - **Save System**:
+    - Store each day's summary in database (daily_summaries table)
+    - Include: narrative, villager snapshots, map state, events
+    - Compress if needed (JSON blob)
+  - **Load System**:
+    - Load summary from database when browsing history
+    - Reconstruct UI from saved data
+  - **Performance**:
+    - Don't regenerate old summaries (cached)
+    - Load summaries on-demand (not all at once)
+
+- [ ] **UX-147**: Add narrative generation system
+  - **Template-Based**:
+    - Story templates for different day types
+    - Variables filled from actual events
+    - Example: "Day {day}: The exiles [action]. [Villager] [achievement]. [Challenge]. [Hope/despair statement]."
+  - **Event-Driven**:
+    - Significant events influence narrative tone
+    - First shelter → hopeful
+    - Death → somber
+    - Great success → triumphant
+  - **AI-Enhanced (Optional)**:
+    - Use LLM to generate more natural narratives
+    - Provide events as context, ask for summary
+    - Fallback to templates if LLM fails
+
+- [ ] **UX-148**: Add summary settings
+  - **Frequency**: Choose day length (100 ticks, 200 ticks, real-time)
+  - **Auto-Pause**: Toggle auto-pause on day end
+  - **Notifications**: "Day X complete" notification
+  - **Skip Summary**: Button to skip directly to next day
+  - **Summary Detail Level**: Minimal | Standard | Detailed
+
+- [ ] **UX-149**: Test daily summary system
+  - Run 10+ day simulation
+  - Verify summaries generate correctly
+  - Check narrative quality and variety
+  - Test historical browsing (all days accessible)
+  - Performance: 100+ days of summaries stored
+  - UI: Smooth transitions, responsive navigation
+
+**Deliverable**: Complete daily summary system with story integration, allowing observers to witness the village's journey day by day
+
+---
+
+## 🎯 Updated Development Timeline
+
+**Original**: 13 phases (v0.2 to v1.4)  
+**Updated**: 14 phases (v0.2 to v1.5)
+
+| Phase | Version | Focus | Tasks | Duration |
+|-------|---------|-------|-------|----------|
+| ... | ... | ... | ... | ... |
+| 13 | v1.4 | Polish & Balance | 15 | 2-4 weeks |
+| **14** | **v1.5** | **Story & Daily Summary** ⭐ | **9** | **2-3 weeks** |
+
+**New Total**: 151 tasks across 14 phases (~9-13 months)
+
+---
+
+## 🎮 Updated Vision Summary
+
+### Opening Experience
+
+Player starts the simulation and sees:
+
+**[Opening Cinematic]**
+```
+"Kingdom of Aeradell, Year 437
+
+Nine loyal servants, falsely accused of treason by
+the corrupt Chancellor, have been cast into the
+wilderness. Stripped of everything, they now stand
+on barren grassland with nothing but their will to
+survive.
+
+Tonight, they made an oath:
+'We will rebuild. Not the kingdom that betrayed us,
+but something greater. A place where loyalty, hard
+work, and trust matter. Our kingdom.'
+
+You are the Silent Chronicler, witness to their
+journey. Each night, as they rest, you will see
+their progress, their struggles, their triumphs.
+
+The first day begins..."
+```
+
+**[Day 1 Begins]**
+- Simulation starts
+- 9 villagers on empty grassland
+- Tick-based progression (LLM decisions)
+- Observer watches in real-time
+
+**[Day 1 Ends - After ~100-200 ticks]**
+- Simulation auto-pauses
+- Screen fades to Daily Summary
+
+**[Daily Summary: Day 1]**
+```
+═══════════════════════════════════════
+    DAY 1 COMPLETE - THE FIRST NIGHT
+═══════════════════════════════════════
+
+[Overview Tab]
+
+The exiles awoke cold and afraid on the barren land.
+Finn and Elin worked together to build the first tent
+while Oskar gathered stone. Bram foraged for berries,
+barely finding enough to ease their hunger. As darkness
+fell, they huddled around a makeshift campfire, 
+exhausted but alive. Tomorrow, they need water.
+
+Key Achievements:
+🏕️  First Shelter Built (Tent by Finn & Elin)
+🔥  Campfire Created (by Tobin)
+🪓  First Tool Crafted (Stone Axe by Oskar)
+
+Challenges Faced:
+😰 All villagers went to sleep hungry
+😴 Energy critically low by evening
+🐺 Wolf spotted nearby (fled)
+
+Village Mood: 😰 Struggling, but hopeful
+
+"We survived the first day. That's something."
+  - Greta, reflecting by the fire
+  
+[Continue to Day 2 →]
+```
+
+**[Villagers Tab]**
+- Grid of 9 cards
+- Click Elin → See her detailed day 1 report
+  - Built tent, gathered wood, hungry, exhausted
+  - Formed bond with Finn (+5 affinity)
+  - Gained 10 XP
+
+**[Map Tab]**
+- Side by side comparison
+- Day Start: Empty grassland
+- Day End: 1 tent, 1 campfire, some trees cut down
+- Statistics: 2 structures, 5 tiles explored, 30 wood gathered
+
+**[Continue to Day 2]**
+- Player clicks button
+- Simulation resumes
+- Villagers continue their journey
+
+### After 10 Days
+
+Observer can:
+- Open "Chronicle" menu
+- Browse Days 1-10
+- See progression: Tent → Small house → Workshop → Storage shed
+- Read narratives: Struggle → Survival → Hope
+- Watch relationships form: Elin & Finn are now friends
+- Celebrate achievements: Oskar reached level 3 blacksmithing
+
+---
+
+**Story + Daily Summaries = Emotional Investment**
+
+The observer doesn't just watch numbers change. They witness a **story of survival, resilience, and rebuilding**. Each day summary is a chapter in the chronicle of the exiles who became kingdom builders.
 
