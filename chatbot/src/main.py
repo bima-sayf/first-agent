@@ -14,7 +14,15 @@ def validate_environment() -> None:
     """Validate required environment variables and configuration on startup."""
     errors = []
     
-    # Validate TG_API_ID
+    # Check for bot token (bot account mode)
+    bot_token = os.getenv("BOT_TOKEN")
+    
+    if not bot_token:
+        errors.append("❌ BOT_TOKEN is not set")
+    elif ":" not in bot_token:
+        errors.append(f"❌ BOT_TOKEN format invalid (should be 'id:hash', got: '{bot_token[:20]}...')")
+    
+    # Still need API_ID and API_HASH for bot mode
     api_id_str = os.getenv("TG_API_ID")
     if not api_id_str:
         errors.append("❌ TG_API_ID is not set")
@@ -26,7 +34,6 @@ def validate_environment() -> None:
         except ValueError:
             errors.append(f"❌ TG_API_ID must be a valid integer (got: '{api_id_str}')")
     
-    # Validate TG_API_HASH
     api_hash = os.getenv("TG_API_HASH")
     if not api_hash:
         errors.append("❌ TG_API_HASH is not set")
@@ -51,22 +58,19 @@ def validate_environment() -> None:
         for error in errors:
             print(f"  {error}")
         print("\n" + "=" * 70)
-        print("📋 SETUP INSTRUCTIONS")
+        print("📋 SETUP INSTRUCTIONS - BOT ACCOUNT MODE")
         print("=" * 70)
         print("""
-1. Copy the example environment file:
-   cp .env.example .env
+1. Get bot token from @BotFather on Telegram
+2. Get API credentials from https://my.telegram.org
 
-2. Get your Telegram API credentials:
-   - Visit https://my.telegram.org
-   - Go to 'API development tools'
-   - Create an application to get your API ID and API Hash
-
-3. Edit .env and fill in your credentials:
+3. Edit .env and fill in:
+   BOT_TOKEN=your_bot_token_from_botfather
    TG_API_ID=your_numeric_api_id
    TG_API_HASH=your_32_character_hash
+   ALLOWED_CHATS=-5556749038
 
-4. Restart the bot:
+4. Add bot to group and restart:
    docker compose up
 """)
         print("=" * 70)
@@ -90,9 +94,10 @@ async def check_ollama_connectivity(url: str, timeout: int = 5) -> bool:
 # Validate environment before loading configuration
 validate_environment()
 
-# Load configuration (but don't initialize Telethon client yet)
+# Load configuration
 API_ID = int(os.environ["TG_API_ID"])
 API_HASH = os.environ["TG_API_HASH"]
+BOT_TOKEN = os.environ["BOT_TOKEN"]  # Bot token from @BotFather
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434/api/chat")
 MODEL = os.getenv("OLLAMA_MODEL", "hermes3")
@@ -116,11 +121,12 @@ if not ALLOWED_CHATS:
     print("❌ Error: No valid chats in ALLOWED_CHATS")
     sys.exit(1)
 
-# Prefix used to mark the bot's own replies, so it never replies to itself
-BOT_PREFIX = "\U0001F916 "  # robot emoji + space
+# Bot account mode - no prefix needed (bot name is clear)
+BOT_PREFIX = ""  # Bot identity is clear from username
 
 SYSTEM_PROMPT = (
-    "You are a helpful, concise assistant chatting with users in Telegram."
+    "You are Reysa, a helpful and concise AI assistant chatting with users in Telegram. "
+    "Keep responses clear, friendly, and to the point."
 )
 
 MAX_HISTORY_MESSAGES = 20  # keep the last N turns so replies stay on-topic
@@ -160,8 +166,9 @@ async def ask_hermes(user_text: str, history: list[dict]) -> str:
 async def main():
     """Main bot entry point."""
     print("=" * 70)
-    print("🤖 HERMES TELEGRAM BOT")
+    print("🤖 REYSA BOT (Bot Account Mode)")
     print("=" * 70)
+    print(f"Bot: @reysablue_bot")
     print(f"Model: {MODEL}")
     print(f"Ollama URL: {OLLAMA_URL}")
     print(f"Max history: {MAX_HISTORY_MESSAGES} messages")
@@ -177,17 +184,46 @@ async def main():
         print("   The bot will start, but responses will fail until Ollama is available.")
         print("   Check with: docker compose ps")
     
-    # Initialize Telegram client INSIDE the async function to use the correct event loop
-    print("\n🔐 Connecting to Telegram...")
-    client = TelegramClient("session/hermes_userbot", API_ID, API_HASH)
+    # Initialize Telegram bot client
+    print("\n🔐 Connecting to Telegram as bot...")
+    client = TelegramClient("session/reysa_bot", API_ID, API_HASH)
+    
+    # Get bot info for mention detection
+    bot_username = None
     
     # Register event handler for allowed chats
-    @client.on(events.NewMessage(chats=ALLOWED_CHATS))
+    @client.on(events.NewMessage(incoming=True, chats=ALLOWED_CHATS))
     async def on_message(event):
         """Handle new messages in allowed chats."""
+        nonlocal bot_username
+        
         text = event.raw_text
-        if not text or text.startswith(BOT_PREFIX):
-            return  # ignore empty messages and the bot's own replies
+        if not text:
+            return  # ignore empty messages
+        
+        # Debug: Print received message info
+        print(f"\n📨 Received message in chat {event.chat_id}")
+        print(f"   Text: {text[:100]}")
+        print(f"   From: {event.sender_id}")
+        
+        # Check if this is the bot's own message (don't respond to self)
+        me = await client.get_me()
+        my_id = me.id
+        
+        if event.sender_id == my_id:
+            print(f"   ⏭️  Ignoring - this is my own message")
+            return  # Don't respond to own messages
+        
+        print(f"   ✅ Processing message...")
+        
+        # Remove bot mention from text if present (optional cleanup)
+        if bot_username:
+            text = text.replace(f"@{bot_username}", "").strip()
+            text = text.replace(bot_username, "").strip()
+        
+        if not text:
+            print(f"   ⚠️  Text empty after cleanup")
+            return
 
         # Get chat-specific history
         chat_id = event.chat_id
@@ -203,14 +239,19 @@ async def main():
             except Exception as exc:
                 reply = f"(error talking to Hermes: {exc})"
 
-        await event.respond(BOT_PREFIX + reply)
+        print(f"   📤 Sending reply: {reply[:100]}...")
+        await event.respond(reply)
     
-    # Start the client
+    # Start the client as bot
     try:
-        await client.start()
-        print("✅ Connected to Telegram")
-        print("\n💬 Listening for messages in configured chats...")
-        print("   Send a message to chat with Hermes!")
+        await client.start(bot_token=BOT_TOKEN)
+        me = await client.get_me()
+        bot_username = me.username
+        print(f"✅ Connected as bot: @{bot_username}")
+        print(f"   Bot name: {me.first_name}")
+        print("\n💬 Listening for ALL messages in configured chats...")
+        print(f"   ⚠️  Make sure Privacy Mode is OFF in @BotFather")
+        print(f"   Bot will respond to every message in the chat")
         if len(ALLOWED_CHATS) == 1:
             print(f"   Active chat: {ALLOWED_CHATS[0]}")
         else:

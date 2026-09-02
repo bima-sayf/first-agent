@@ -12,6 +12,8 @@ This state right now is the initial state. I want you to x-check every scripts &
 
 then, remove any info that describe changes like ux-004-* or critical-fix-*. the objective that we don't want to confuse the developer and make them overwhelmed with too much information. just keep it simple, neat, and tidy with only important documents describing the latest state.
 
+Also, check the dockerfile. If it still has previous userbot setup, clean it up. I saw hermes session still generated there. clean it up if we don't need it. In advance, clean every line of code that does not assemble this initial state.
+
 because this is the initial state.
 
 ### Runtime Stability
@@ -119,396 +121,32 @@ Server closed the connection: 0 bytes read on a total of 8 expected bytes
 ### User Experience
 
 #### UX-005: Bot Account Mode (Reply as Different User)
-**Status**: 🟡 Open  
+**Status**: ✅ Done  
 **Effort**: Large  
+**Completed**: 2026-09-01  
 **Description**: Make the bot reply as a separate bot account instead of your personal account, so it doesn't look like you're talking to yourself in the group.
 
-**Current Behavior**:
-- Bot runs as **userbot** (your personal Telegram account)
-- All responses appear from YOU
-- In groups, looks like you're replying to yourself
-- Confusing for other group members
+**Implementation**: Chose **Option A - Full Migration to Bot Account**  
+**Bot**: @reysablue_bot (Reysa)  
+**Token**: 8843794560:AAHVAfK5VlEHTOXPILib1_UVLpG3NUbKWXE  
+**Group**: First-Agent (chat ID: -5556749038)
 
-**Desired Behavior**:
-- Bot replies as a **separate bot account** (like @FirstAgentBot)
-- Clear distinction between your messages and bot responses
-- More professional appearance in groups
-- Other members know it's a bot, not you
+**See**: `docs/UX-005-IMPLEMENTATION.md` for full implementation details
 
----
-
-**Technical Considerations**:
-
-### 1. Userbot vs Bot Account
-
-| Feature | Userbot (Current) | Bot Account (Desired) |
-|---------|-------------------|----------------------|
-| Authentication | Your phone number | Bot token from @BotFather |
-| Appears as | Your name | Bot name |
-| Message history | Can read all | Only tagged/replied messages |
-| Permissions | Your permissions | Limited bot permissions |
-| Setup | Session file | Bot token |
-| Telegram Client | `TelegramClient` | `TelegramClient` with bot=True |
-
-### 2. Architecture Change Required
-
-**Current (Userbot)**:
-```python
-client = TelegramClient("session/hermes_userbot", API_ID, API_HASH)
-await client.start()  # Logs in as YOU
-```
-
-**Proposed (Bot Account)**:
-```python
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # From @BotFather
-client = TelegramClient("session/bot_session", API_ID, API_HASH)
-await client.start(bot_token=BOT_TOKEN)  # Logs in as BOT
-```
-
-### 3. Message Handling Differences
-
-**Userbot** (current):
-- Sees ALL messages in allowed chats
-- Can respond to any message
-- No @mentions needed
-
-**Bot Account**:
-- Only sees messages that:
-  - Mention the bot (`@botname`)
-  - Reply to bot's messages
-  - Start with `/` (commands)
-  - In private chats (all messages)
-- Cannot read message history before being added
-- More restricted but clearer intent
-
-### 4. Setup Process Changes
-
-**Userbot Setup** (current):
-1. Get API_ID and API_HASH from my.telegram.org
-2. Run bot, log in with phone number
-3. Session file created
-
-**Bot Account Setup**:
-1. Talk to @BotFather on Telegram
-2. Create new bot (`/newbot`)
-3. Get bot token (e.g., `110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw`)
-4. Add bot token to `.env`
-5. Add bot to group as admin (or allow bot access)
-
-### 5. Limitations to Consider
-
-**Bot Account Limitations**:
-- ❌ Cannot read messages that don't involve it
-- ❌ Cannot initiate conversations (except in private chats)
-- ❌ Cannot see message history before being added
-- ❌ Requires explicit mentions or replies
-- ✅ But appears as separate entity
-- ✅ But clearer for groups
-- ✅ But doesn't use your personal account
-
-**Impact on Features**:
-- ✅ Group chat: Works (with mentions)
-- ⚠️ Conversation history: Only from when bot was added
-- ⚠️ Response trigger: Requires mention or reply
-- ❌ Saved Messages: Doesn't work (bots can't message themselves)
-
----
-
-**Implementation Options**:
-
-### Option A: Full Migration to Bot Account
-**Replace userbot with bot account entirely**
-
-**Pros**:
-- Clear separation (bot is bot, you are you)
-- Professional appearance
-- Follows Telegram bot guidelines
-- No ToS concerns
-
-**Cons**:
-- Requires mentions (`@botname message`)
-- Cannot work in Saved Messages
-- Loses ability to see all messages
-- Breaking change for users
-
-**Configuration**:
-```bash
-BOT_TOKEN=110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw
-ALLOWED_CHATS=-5556749038
-```
-
----
-
-### Option B: Dual Mode (Userbot OR Bot Account)
-**Support both modes, user chooses**
-
-**Pros**:
-- Flexibility (use userbot for Saved Messages, bot for groups)
-- No breaking changes
-- Can switch modes
-
-**Cons**:
-- More complex configuration
-- Need to maintain two code paths
-- More testing required
-
-**Configuration**:
-```bash
-# Userbot mode (current)
-BOT_MODE=userbot
-TG_API_ID=...
-TG_API_HASH=...
-
-# Bot account mode (new)
-BOT_MODE=bot
-BOT_TOKEN=110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw
-```
-
----
-
-### Option C: Hybrid (Two Bots Running)
-**Run userbot for monitoring + bot account for responding**
-
-**How it works**:
-1. Userbot monitors messages (invisible, doesn't respond)
-2. When message detected, userbot triggers bot account
-3. Bot account responds (appears as @botname)
-
-**Pros**:
-- Can see all messages (userbot)
-- Responds as bot (bot account)
-- Best of both worlds
-- Can respond to any message, not just mentions
-
-**Cons**:
-- Complex architecture (two clients)
-- More resource intensive
-- More complex to maintain
-- Potential race conditions
-
-**Would require**:
-- Two Telegram clients running
-- Message queue between them
-- Coordination logic
-
----
-
-**Tasks**:
-
-- [ ] Decide on implementation approach (A, B, or C)
-- [ ] Create bot account via @BotFather
-- [ ] Update authentication code to support bot token
-- [ ] Update event handlers (bot only sees mentions/replies)
-- [ ] Handle message visibility differences
-- [ ] Update BOT_PREFIX (or remove if bot name is clear enough)
-- [ ] Test in groups with mentions
-- [ ] Update configuration (.env.example)
-- [ ] Add bot permission setup to documentation
-- [ ] Consider migration path for existing users
-
----
-
-**Recommended Approach**: **Option B (Dual Mode)**
-
-**Why**:
-1. **Backward compatible** - Userbot mode still works
-2. **Flexible** - Users choose based on use case
-3. **Clear migration** - Can switch modes without losing functionality
-4. **Salvages Saved Messages** - Userbot mode keeps that working
-
-**Implementation**:
-```python
-BOT_MODE = os.getenv("BOT_MODE", "userbot")
-
-if BOT_MODE == "bot":
-    # Bot account mode
-    BOT_TOKEN = os.getenv("BOT_TOKEN")
-    client = TelegramClient("session/bot_session", API_ID, API_HASH)
-    await client.start(bot_token=BOT_TOKEN)
-    # Only listen to mentions/replies
-else:
-    # Userbot mode (current)
-    client = TelegramClient("session/hermes_userbot", API_ID, API_HASH)
-    await client.start()
-    # Listen to all messages in allowed chats
-```
-
----
-
-**Code Changes Required**:
-
-### 1. Configuration (`src/main.py`)
-```python
-# Add bot mode configuration
-BOT_MODE = os.getenv("BOT_MODE", "userbot")
-BOT_TOKEN = os.getenv("BOT_TOKEN") if BOT_MODE == "bot" else None
-
-# Validate bot token if in bot mode
-if BOT_MODE == "bot" and not BOT_TOKEN:
-    errors.append("❌ BOT_TOKEN required when BOT_MODE=bot")
-```
-
-### 2. Client Initialization
-```python
-if BOT_MODE == "bot":
-    client = TelegramClient("session/bot_session", API_ID, API_HASH)
-    await client.start(bot_token=BOT_TOKEN)
-    print(f"✅ Connected as bot (token: {BOT_TOKEN[:10]}...)")
-else:
-    client = TelegramClient("session/hermes_userbot", API_ID, API_HASH)
-    await client.start()
-    print("✅ Connected as userbot")
-```
-
-### 3. Event Handler
-```python
-if BOT_MODE == "bot":
-    # Bot mode: only respond to mentions or replies
-    @client.on(events.NewMessage(incoming=True, chats=ALLOWED_CHATS))
-    async def on_message(event):
-        # Check if mentioned or replied to
-        if not (event.mentioned or (event.is_reply and await is_reply_to_bot(event))):
-            return
-        # ... process message
-else:
-    # Userbot mode: respond to all messages (current behavior)
-    @client.on(events.NewMessage(chats=ALLOWED_CHATS))
-    async def on_message(event):
-        # ... process message (current code)
-```
-
-### 4. Bot Prefix
-```python
-if BOT_MODE == "bot":
-    # Bot account is already clear, maybe no prefix needed
-    BOT_PREFIX = ""  # Or keep it
-else:
-    # Userbot needs prefix to identify bot responses
-    BOT_PREFIX = "\U0001F916 "
-```
-
----
-
-**Setup Guide for Users**:
-
-### Creating a Bot Account
-
-1. **Open Telegram** and search for `@BotFather`
-
-2. **Create bot**:
-   ```
-   /newbot
-   ```
-
-3. **Choose name**:
-   ```
-   First Agent Assistant
-   ```
-
-4. **Choose username** (must end in 'bot'):
-   ```
-   FirstAgentBot
-   ```
-
-5. **Get token**:
-   ```
-   Use this token to access the HTTP API:
-   110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw
-   ```
-
-6. **Add to `.env`**:
-   ```bash
-   BOT_MODE=bot
-   BOT_TOKEN=110201543:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw
-   ALLOWED_CHATS=-5556749038
-   ```
-
-7. **Add bot to group**:
-   - Go to First-Agent group
-   - Add @FirstAgentBot as member
-   - Give admin rights (for message access)
-
-8. **Restart bot**:
-   ```bash
-   docker compose restart bot
-   ```
-
-9. **Test**:
-   ```
-   @FirstAgentBot hello!
-   ```
-
----
+**Key Changes**:
+- Bot runs as @reysablue_bot (not personal account)
+- Responds to mentions and replies only
+- No 🤖 prefix needed (bot username is clear)
+- Session file: `session/reysa_bot.session`
 
 **Acceptance Criteria**:
-
-- ✅ Bot can run in bot account mode
-- ✅ Bot responds as separate account (not your personal account)
-- ✅ Backward compatible (userbot mode still works)
-- ✅ Configuration switches between modes
-- ✅ Clear documentation for setup
-- ✅ Mentions and replies work in bot mode
+- ✅ Bot runs as separate account
+- ✅ Bot identity is @reysablue_bot  
+- ✅ Responds to mentions
+- ✅ Responds to replies
 - ✅ No "talking to yourself" appearance
-
----
-
-**Effort Estimate**: **Large (2-3 days)**
-
-**Breakdown**:
-- Bot mode implementation: 4 hours
-- Dual mode configuration: 2 hours
-- Event handler updates: 3 hours
-- Testing in both modes: 3 hours
-- Documentation: 2 hours
-- Bot account setup guide: 1 hour
-- Migration testing: 1 hour
-
----
-
-**Dependencies**:
-- None (can be implemented independently)
-- Complements UX-004 (group chat support)
-
----
-
-**Related Items**:
-- UX-004: Group chat support (already implemented)
-- UX-001: Bot commands (would work in both modes)
-
----
-
-**Breaking Changes**:
-- None if Option B (Dual Mode) is chosen
-- Default mode remains userbot (backward compatible)
-- Users opt-in to bot mode
-
----
-
-**Security Considerations**:
-
-1. **Bot Token Security**:
-   - Token is like a password
-   - Must be in `.env` (git-ignored)
-   - Don't commit or share publicly
-
-2. **Bot Permissions**:
-   - Bot needs to be added to group
-   - May need admin rights to see all messages
-   - Less powerful than userbot (by design)
-
-3. **Session Files**:
-   - Separate session for bot mode (`bot_session`)
-   - Won't conflict with userbot session
-
----
-
-**Future Enhancements** (Post-Implementation):
-
-1. **Mention-only mode** (already considered in design)
-2. **Bot commands** (/help, /reset, etc.)
-3. **Bot profile picture** (set via @BotFather)
-4. **Bot description** (shown in group member list)
-5. **Inline queries** (optional advanced feature)
+- ✅ Per-chat history maintained
+- ✅ Works in First-Agent group
 
 ---
 
@@ -1239,9 +877,9 @@ Support conversations in multiple chats, not just Saved Messages.
 ## 📊 Backlog Statistics
 
 **Total Items**: 32  
-**Completed**: 4 ✅  
+**Completed**: 5 ✅  
 **Critical**: 0 (3 completed)  
-**High**: 7 (1 completed: UX-004)  
+**High**: 6 (2 completed: UX-004, UX-005)  
 **Medium**: 10  
 **Low**: 8  
 **Future Ideas**: 15  
@@ -1249,7 +887,7 @@ Support conversations in multiple chats, not just Saved Messages.
 **By Category**:
 - Runtime Stability: 1 (✅ completed)
 - Security & Compliance: 2 (✅ completed)
-- User Experience: 5 (1 completed: UX-004, 1 superseded, 1 new: UX-005)
+- User Experience: 5 (2 completed: UX-004 ✅, UX-005 ✅, 1 superseded)
 - Persistence & Reliability: 2
 - Code Quality: 4
 - Testing: 2
@@ -1260,6 +898,7 @@ Support conversations in multiple chats, not just Saved Messages.
 - Future Ideas: 15
 
 **Recent Completions**:
+- 2026-09-01: UX-005 - Bot Account Mode (@reysablue_bot)
 - 2026-09-01: UX-004 - Group Chat Support (First-Agent group)
 - 2026-09-01: CRIT-001 - Telethon Event Loop Conflicts
 - 2026-09-01: SEC-001 - Secure Session File Handling
