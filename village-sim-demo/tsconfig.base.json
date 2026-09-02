@@ -28,11 +28,11 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
-      "@domain/*": ["server/src/domain/*"],
-      "@application/*": ["server/src/application/*"],
-      "@infrastructure/*": ["server/src/infrastructure/*"],
-      "@api/*": ["server/src/api/*"],
-      "@shared/*": ["server/src/shared/*"],
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@api/*": ["src/api/*"],
+      "@shared/*": ["src/shared/*"],
       "@tests/*": ["tests/*"]
     }
   },

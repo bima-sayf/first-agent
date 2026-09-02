@@ -1,13 +1,14 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/server/src', '<rootDir>/tests'],
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/*.spec.ts', '**/*.test.ts'],
   collectCoverageFrom: [
-    'server/src/**/*.ts',
-    '!server/src/**/*.d.ts',
-    '!server/src/main.ts',
-    '!server/src/**/*.interface.ts'
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/server/index.ts',
+    '!src/**/*.interface.ts',
+    '!src/**/*.type.ts'
   ],
   coverageThreshold: {
     global: {
@@ -18,14 +19,18 @@ module.exports = {
     }
   },
   moduleNameMapper: {
-    '^@domain/(.*)$': '<rootDir>/server/src/domain/$1',
-    '^@application/(.*)$': '<rootDir>/server/src/application/$1',
-    '^@infrastructure/(.*)$': '<rootDir>/server/src/infrastructure/$1',
-    '^@api/(.*)$': '<rootDir>/server/src/api/$1',
-    '^@shared/(.*)$': '<rootDir>/server/src/shared/$1',
-    '^@tests/(.*)$': '<rootDir>/tests/$1'
+    '^@domain/(.*)$': '<rootDir>/src/domain/$1',
+    '^@application/(.*)$': '<rootDir>/src/application/$1',
+    '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
+    '^@api/(.*)$': '<rootDir>/src/api/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1'
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 10000,
-  verbose: true
+  verbose: true,
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: 'tsconfig.test.json'
+    }]
+  }
 };

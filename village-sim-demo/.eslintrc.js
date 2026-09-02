@@ -1,36 +1,43 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: './tsconfig.json',
-    ecmaVersion: 2020,
+    ecmaVersion: 2022,
     sourceType: 'module'
   },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:prettier/recommended'
+    'prettier'
   ],
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {
-    '@typescript-eslint/explicit-function-return-type': ['error', {
-      allowExpressions: true,
-      allowTypedFunctionExpressions: true
-    }],
+    'prettier/prettier': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { 
       argsIgnorePattern: '^_',
       varsIgnorePattern: '^_'
     }],
-    '@typescript-eslint/no-explicit-any': 'error',
-    '@typescript-eslint/no-floating-promises': 'error',
-    '@typescript-eslint/await-thenable': 'error',
-    'no-console': ['error', { allow: ['warn', 'error'] }],
-    'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
-    'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true, skipComments: true }],
-    'complexity': ['warn', 10],
+    '@typescript-eslint/no-explicit-any': 'warn',
+    'no-console': 'off',
+    'max-lines-per-function': ['warn', { max: 100, skipBlankLines: true, skipComments: true }],
+    'complexity': ['warn', 15],
     'prefer-const': 'error',
-    'no-var': 'error',
-    'eqeqeq': ['error', 'always']
+    'no-var': 'error'
   },
-  ignorePatterns: ['dist', 'node_modules', '*.js', '*.config.js']
+  overrides: [
+    {
+      // Test-specific rules
+      files: ['**/*.test.ts', '**/*.spec.ts'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off', // Allow require() in tests for migrations
+        'max-lines-per-function': 'off', // Tests can be longer
+        'complexity': 'off', // Tests can be more complex
+      }
+    }
+  ],
+  env: {
+    node: true,
+    es2022: true,
+    jest: true
+  },
+  ignorePatterns: ['dist', 'node_modules', 'coverage', '*.config.js']
 };

@@ -1,15 +1,46 @@
 {
   "name": "village-sim-demo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "9-villager autonomous AI village simulation demo",
-  "main": "server/index.js",
+  "description": "9-villager autonomous AI village simulation with progressive world building",
+  "main": "dist/server/index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node dist/server/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server/index.ts",
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "db:migrate": "ts-node -r tsconfig-paths/register --project tsconfig.json src/infrastructure/database/migrations/run-migrations.ts",
+    "db:seed": "ts-node -r tsconfig-paths/register --project tsconfig.json src/infrastructure/database/seeds/seed-phase1.ts",
+    "db:reset": "rm -f data/village-sim.db && npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
+    "better-sqlite3": "^11.0.0",
     "express": "^4.19.2",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.4",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.9.3",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
   }
 }
