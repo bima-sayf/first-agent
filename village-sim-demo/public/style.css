@@ -1,0 +1,101 @@
+:root {
+  --bg: #1e2124;
+  --panel: #26292d;
+  --accent: #7cb342;
+  --text: #e8e6e3;
+  --muted: #9aa0a6;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 20px;
+  background: #14161a;
+  border-bottom: 2px solid #000;
+}
+
+header h1 { font-size: 18px; margin: 0; flex: 1; }
+
+.badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #444;
+}
+.badge.llm { background: #2e7d32; }
+.badge.fallback { background: #8d6e63; }
+
+#clock {
+  font-family: monospace;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+main {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+
+#game-container {
+  border: 3px solid #000;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+}
+
+#panel {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#panel section {
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 10px 12px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+#panel h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0 0 8px 0;
+}
+
+.villager-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 0;
+  border-bottom: 1px solid #333;
+  font-size: 13px;
+}
+.villager-row:last-child { border-bottom: none; }
+
+.villager-row .emoji { font-size: 18px; }
+
+.villager-row .name { font-weight: bold; }
+.villager-row .status { color: var(--accent); font-size: 11px; }
+.villager-row .thought { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+.log-entry {
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px dashed #333;
+}
+.log-entry .t { color: var(--muted); margin-right: 6px; font-family: monospace; }
