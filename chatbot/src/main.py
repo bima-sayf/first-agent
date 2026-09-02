@@ -58,7 +58,7 @@ def validate_environment() -> None:
         for error in errors:
             print(f"  {error}")
         print("\n" + "=" * 70)
-        print("📋 SETUP INSTRUCTIONS - BOT ACCOUNT MODE")
+        print("📋 SETUP INSTRUCTIONS")
         print("=" * 70)
         print("""
 1. Get bot token from @BotFather on Telegram
@@ -97,44 +97,38 @@ validate_environment()
 # Load configuration
 API_ID = int(os.environ["TG_API_ID"])
 API_HASH = os.environ["TG_API_HASH"]
-BOT_TOKEN = os.environ["BOT_TOKEN"]  # Bot token from @BotFather
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434/api/chat")
 MODEL = os.getenv("OLLAMA_MODEL", "hermes3")
 
-# Parse allowed chats from environment
-# Format: "me" for Saved Messages, or comma-separated chat IDs
-# Example: ALLOWED_CHATS=me,-1001234567890
-ALLOWED_CHATS_STR = os.getenv("ALLOWED_CHATS", "me")
+# Parse allowed chats from environment (comma-separated chat IDs)
+ALLOWED_CHATS_STR = os.getenv("ALLOWED_CHATS", "-5556749038")
 ALLOWED_CHATS = []
 for chat in ALLOWED_CHATS_STR.split(","):
     chat = chat.strip()
-    if chat == "me":
-        ALLOWED_CHATS.append("me")
-    else:
-        try:
-            ALLOWED_CHATS.append(int(chat))
-        except ValueError:
-            print(f"⚠️  Warning: Invalid chat ID '{chat}' in ALLOWED_CHATS, skipping")
+    try:
+        ALLOWED_CHATS.append(int(chat))
+    except ValueError:
+        print(f"⚠️  Warning: Invalid chat ID '{chat}' in ALLOWED_CHATS, skipping")
 
 if not ALLOWED_CHATS:
     print("❌ Error: No valid chats in ALLOWED_CHATS")
     sys.exit(1)
 
-# Bot account mode - no prefix needed (bot name is clear)
-BOT_PREFIX = ""  # Bot identity is clear from username
+BOT_PREFIX = ""
 
 SYSTEM_PROMPT = (
     "You are Reysa, a helpful and concise AI assistant chatting with users in Telegram. "
     "Keep responses clear, friendly, and to the point."
 )
 
-MAX_HISTORY_MESSAGES = 20  # keep the last N turns so replies stay on-topic
+MAX_HISTORY_MESSAGES = 20
 
 # Ensure session directory exists
 os.makedirs("session", exist_ok=True)
 
-# Per-chat conversation history (dict with chat_id as key)
+# Per-chat conversation history
 chat_histories: dict = {}
 
 
@@ -166,7 +160,7 @@ async def ask_hermes(user_text: str, history: list[dict]) -> str:
 async def main():
     """Main bot entry point."""
     print("=" * 70)
-    print("🤖 REYSA BOT (Bot Account Mode)")
+    print("🤖 REYSA BOT")
     print("=" * 70)
     print(f"Bot: @reysablue_bot")
     print(f"Model: {MODEL}")
@@ -184,11 +178,10 @@ async def main():
         print("   The bot will start, but responses will fail until Ollama is available.")
         print("   Check with: docker compose ps")
     
-    # Initialize Telegram bot client
-    print("\n🔐 Connecting to Telegram as bot...")
+    # Initialize Telegram client
+    print("\n🔐 Connecting to Telegram...")
     client = TelegramClient("session/reysa_bot", API_ID, API_HASH)
     
-    # Get bot info for mention detection
     bot_username = None
     
     # Register event handler for allowed chats
@@ -199,24 +192,22 @@ async def main():
         
         text = event.raw_text
         if not text:
-            return  # ignore empty messages
+            return
         
-        # Debug: Print received message info
         print(f"\n📨 Received message in chat {event.chat_id}")
         print(f"   Text: {text[:100]}")
         print(f"   From: {event.sender_id}")
         
-        # Check if this is the bot's own message (don't respond to self)
         me = await client.get_me()
         my_id = me.id
         
         if event.sender_id == my_id:
-            print(f"   ⏭️  Ignoring - this is my own message")
-            return  # Don't respond to own messages
+            print(f"   ⏭️  Ignoring - own message")
+            return
         
         print(f"   ✅ Processing message...")
         
-        # Remove bot mention from text if present (optional cleanup)
+        # Remove bot mention from text if present
         if bot_username:
             text = text.replace(f"@{bot_username}", "").strip()
             text = text.replace(bot_username, "").strip()
@@ -225,7 +216,6 @@ async def main():
             print(f"   ⚠️  Text empty after cleanup")
             return
 
-        # Get chat-specific history
         chat_id = event.chat_id
         history = get_chat_history(chat_id)
 
@@ -242,23 +232,21 @@ async def main():
         print(f"   📤 Sending reply: {reply[:100]}...")
         await event.respond(reply)
     
-    # Start the client as bot
+    # Start the client
     try:
         await client.start(bot_token=BOT_TOKEN)
         me = await client.get_me()
         bot_username = me.username
-        print(f"✅ Connected as bot: @{bot_username}")
+        print(f"✅ Connected as: @{bot_username}")
         print(f"   Bot name: {me.first_name}")
-        print("\n💬 Listening for ALL messages in configured chats...")
-        print(f"   ⚠️  Make sure Privacy Mode is OFF in @BotFather")
-        print(f"   Bot will respond to every message in the chat")
+        print("\n💬 Listening for messages in configured chats...")
+        print(f"   ⚠️  Privacy Mode should be OFF in @BotFather for all messages")
         if len(ALLOWED_CHATS) == 1:
             print(f"   Active chat: {ALLOWED_CHATS[0]}")
         else:
             print(f"   Active chats: {len(ALLOWED_CHATS)}")
         print("=" * 70 + "\n")
         
-        # Run until disconnected
         await client.run_until_disconnected()
     except KeyboardInterrupt:
         print("\n\n🛑 Shutting down gracefully...")

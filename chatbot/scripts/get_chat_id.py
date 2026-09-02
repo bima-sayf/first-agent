@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
-Helper script to get chat IDs for groups you're a member of.
-Run this to find the chat ID of your "First-Agent" group.
+Helper script to get chat IDs for groups.
+Run this to find the chat ID of your Telegram groups.
 """
 import asyncio
 import os
 import sys
 
-# Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from dotenv import load_dotenv
@@ -17,6 +16,7 @@ load_dotenv()
 
 API_ID = int(os.environ["TG_API_ID"])
 API_HASH = os.environ["TG_API_HASH"]
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 
 async def list_chats():
@@ -26,8 +26,15 @@ async def list_chats():
     print("=" * 70)
     print("\nConnecting to Telegram...\n")
     
-    client = TelegramClient("session/hermes_userbot", API_ID, API_HASH)
+    client = TelegramClient("session/reysa_bot", API_ID, API_HASH)
     
+    try:
+        if BOT_TOKEN:
+            await client.start(bot_token=BOT_TOKEN)
+            print("✅ Connected as bot\n")
+        else:
+            await client.start()
+            print("✅ Connected\n")
     try:
         await client.start()
         print("✅ Connected!\n")

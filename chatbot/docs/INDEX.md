@@ -1,78 +1,59 @@
 # Documentation Index
 
-This directory contains supporting documentation for the Hermes Telegram Bot project.
+Complete documentation for the Reysa Telegram Bot project.
 
 ---
 
 ## 📘 Start Here
 
-**Main Knowledge Hub**: [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md)  
-Read this first to understand the project architecture, design, and technical details.
-
 **Quick Start**: [`../README.md`](../README.md)  
-Get the bot running quickly.
+Get the bot running in 5 minutes.
+
+**Project Context**: [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md)  
+Understand the architecture and technical details.
 
 ---
 
 ## 📚 Documentation Files
 
-### Planning & Tracking
-- **[BACKLOGS.md](BACKLOGS.md)** - Feature roadmap, task priorities, and improvement tracking
-- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
+### Essential Guides
+- **[QUICK-START.md](QUICK-START.md)** - Detailed setup walkthrough
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[PRIVACY-MODE-GUIDE.md](PRIVACY-MODE-GUIDE.md)** - Configure bot response modes
 
-### Setup & Configuration
-- **[GROUP-SETUP-GUIDE.md](GROUP-SETUP-GUIDE.md)** - How to configure the bot for Telegram groups
-- **[STRUCTURE.md](STRUCTURE.md)** - Project organization and file structure explained
-
-### Technical Deep-Dives
-- **[CRITICAL-FIX-SUMMARY.md](CRITICAL-FIX-SUMMARY.md)** - Event loop bug fix (technical analysis)
-- **[UX-004-ASSESSMENT.md](UX-004-ASSESSMENT.md)** - Group chat feature assessment
-- **[UX-004-IMPLEMENTATION-COMPLETE.md](UX-004-IMPLEMENTATION-COMPLETE.md)** - Group chat implementation summary
-
-### Project History
-- **[REORGANIZATION-SUMMARY.md](REORGANIZATION-SUMMARY.md)** - Project structure migration details
-- **[ORGANIZATION-COMPLETE.md](ORGANIZATION-COMPLETE.md)** - Organization completion summary
+### Planning & Development
+- **[BACKLOGS.md](BACKLOGS.md)** - Feature roadmap and improvement tracking
 
 ---
 
-## 🗂️ Documentation Categories
+## 🗂️ By Audience
 
 ### For Users
-- Quick Start: [`../README.md`](../README.md)
-- Group Setup: [GROUP-SETUP-GUIDE.md](GROUP-SETUP-GUIDE.md)
+1. [`../README.md`](../README.md) - Quick start
+2. [QUICK-START.md](QUICK-START.md) - Detailed setup
+3. [PRIVACY-MODE-GUIDE.md](PRIVACY-MODE-GUIDE.md) - Configure response behavior
+4. [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Fix common issues
 
 ### For Developers
-- Architecture: [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md)
-- Project Structure: [STRUCTURE.md](STRUCTURE.md)
-- Backlog: [BACKLOGS.md](BACKLOGS.md)
-
-### For Contributors
-- Changelog: [CHANGELOG.md](CHANGELOG.md)
-- Reorganization: [REORGANIZATION-SUMMARY.md](REORGANIZATION-SUMMARY.md)
-
-### Technical References
-- Bug Fixes: [CRITICAL-FIX-SUMMARY.md](CRITICAL-FIX-SUMMARY.md)
-- Feature Implementation: [UX-004-IMPLEMENTATION-COMPLETE.md](UX-004-IMPLEMENTATION-COMPLETE.md)
+1. [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md) - Architecture overview
+2. [BACKLOGS.md](BACKLOGS.md) - Roadmap and tasks
+3. Code: `../src/main.py` - Bot implementation
 
 ---
 
 ## 📖 Reading Order
 
-### New to the Project?
-1. [`../README.md`](../README.md) - Quick start
-2. [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md) - Understand the architecture
-3. [GROUP-SETUP-GUIDE.md](GROUP-SETUP-GUIDE.md) - Configure for your use case
+### New User Setup
+1. **[README.md](../README.md)** - Overview and quick start
+2. **[QUICK-START.md](QUICK-START.md)** - Step-by-step setup
+3. **[PRIVACY-MODE-GUIDE.md](PRIVACY-MODE-GUIDE.md)** - Configure response mode
+4. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - When things go wrong
 
-### Want to Contribute?
-1. [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md) - Architecture overview
-2. [STRUCTURE.md](STRUCTURE.md) - How files are organized
-3. [BACKLOGS.md](BACKLOGS.md) - What needs to be done
-4. [CHANGELOG.md](CHANGELOG.md) - Recent changes
-
-### Troubleshooting?
-1. [`../README.md`](../README.md) - Basic troubleshooting
-2. [GROUP-SETUP-GUIDE.md](GROUP-SETUP-GUIDE.md) - Group-specific issues
-3. [CRITICAL-FIX-SUMMARY.md](CRITICAL-FIX-SUMMARY.md) - Known bug fixes
+### Developer Onboarding
+1. **[README.md](../README.md)** - Project overview
+2. **[PROJECT-CONTEXT.md](../PROJECT-CONTEXT.md)** - Architecture and design
+3. **[BACKLOGS.md](BACKLOGS.md)** - Planned features
+4. **Source Code** - `../src/main.py`
 
 ---
 
@@ -80,53 +61,45 @@ Get the bot running quickly.
 
 **I want to...**
 
-- **Get started quickly** → [`../README.md`](../README.md)
-- **Understand the architecture** → [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md)
-- **Use in a Telegram group** → [GROUP-SETUP-GUIDE.md](GROUP-SETUP-GUIDE.md)
+- **Set up the bot** → [QUICK-START.md](QUICK-START.md)
+- **Fix an issue** → [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- **Change response mode** → [PRIVACY-MODE-GUIDE.md](PRIVACY-MODE-GUIDE.md)
+- **Understand architecture** → [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md)
 - **See what's planned** → [BACKLOGS.md](BACKLOGS.md)
-- **Check recent changes** → [CHANGELOG.md](CHANGELOG.md)
-- **Understand file organization** → [STRUCTURE.md](STRUCTURE.md)
-- **Learn about bug fixes** → [CRITICAL-FIX-SUMMARY.md](CRITICAL-FIX-SUMMARY.md)
-- **Find chat IDs** → Use `../scripts/get_chat_id.py`
+- **Find chat IDs** → `../scripts/get_chat_id.py`
+- **Check bot permissions** → `../scripts/check_bot_permissions.py`
 
 ---
 
 ## 📝 Documentation Standards
 
-### File Naming
-- Use `SCREAMING-KEBAB-CASE.md` for top-level docs
-- Use descriptive names (not generic like `DOC001.md`)
-- Prefix feature docs with feature ID (e.g., `UX-004-*`)
+### Purpose
+Each document serves a specific purpose:
+- **README.md** - Project overview and quick start
+- **QUICK-START.md** - Detailed setup instructions
+- **TROUBLESHOOTING.md** - Problem resolution
+- **PRIVACY-MODE-GUIDE.md** - Feature configuration
+- **PROJECT-CONTEXT.md** - Technical architecture
+- **BACKLOGS.md** - Development roadmap
 
-### Content Structure
-- Start with a clear title and date
-- Include table of contents for long docs
-- Use headers for navigation
-- Add code examples where relevant
-- Link to related documents
-
-### When to Create New Docs
-- **User guides**: How to accomplish specific tasks
-- **Technical deep-dives**: Detailed explanations of complex topics
-- **Implementation summaries**: Major feature completions
-- **Migration guides**: Changes requiring user action
-
-### When to Update Existing Docs
-- Bug fixes: Update CHANGELOG.md
-- New features: Update BACKLOGS.md and CHANGELOG.md
-- Architecture changes: Update PROJECT-CONTEXT.md
-- File reorganization: Update STRUCTURE.md
+### Style
+- Clear, concise headings
+- Step-by-step instructions where applicable
+- Code examples for technical content
+- Links to related documentation
 
 ---
 
 ## 🔗 External References
 
-- **Telegram API**: https://core.telegram.org/
-- **Telethon Docs**: https://docs.telethon.dev/
+- **Telegram Bot API**: https://core.telegram.org/bots/api
+- **Telethon Documentation**: https://docs.telethon.dev/
 - **Ollama**: https://ollama.ai/
 - **Hermes 3 Model**: https://huggingface.co/NousResearch/Hermes-3-Llama-3.1-8B
+- **@BotFather**: https://t.me/BotFather
 
 ---
 
-**Last Updated**: 2026-09-01  
-**Maintainers**: Project Team
+**Version**: 1.0  
+**Last Updated**: 2026-09-02  
+**Bot**: @reysablue_bot (Reysa)

@@ -1,7 +1,7 @@
 services:
   ollama:
     image: ollama/ollama:latest
-    container_name: hermes-ollama
+    container_name: reysa-ollama
     ports:
       - "11434:11434"
     volumes:
@@ -23,7 +23,7 @@ services:
 
   bot:
     build: .
-    container_name: hermes-telegram-bot
+    container_name: reysa-bot
     depends_on:
       model-init:
         condition: service_completed_successfully

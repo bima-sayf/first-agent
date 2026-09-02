@@ -1,242 +1,363 @@
-# Chatbot Project Context
+# Reysa Telegram Bot - Project Context
 
 ## Project Overview
 
-This is a **Telegram userbot** that integrates with a locally-running **Hermes 3 (8B)** LLM model via Ollama. The bot monitors your **Telegram Saved Messages** chat and responds to your messages using AI, creating a personal AI assistant experience within Telegram.
+**Reysa** is a Telegram bot that integrates with a locally-running **Hermes 3 (8B)** LLM model via Ollama. The bot operates in Telegram groups, responds to messages, and maintains per-chat conversation history.
+
+**Bot**: @reysablue_bot (Reysa)  
+**Model**: Hermes 3 (8B) via Ollama  
+**Mode**: Bot account (appears as separate bot, not personal account)  
+**Deployment**: Dockerized 3-container setup
+
+---
 
 ## Architecture
 
+### Container Stack
+
 The project uses a **3-container Docker Compose setup**:
 
-### 1. `ollama` Container
+#### 1. `ollama` Container
 - **Image**: `ollama/ollama:latest`
-- **Purpose**: Model server that hosts and runs the Hermes 3 LLM
+- **Purpose**: Model server hosting Hermes 3 LLM
 - **Port**: 11434 (exposed for API access)
-- **Persistence**: Uses `ollama_data` Docker volume to store model weights (~4.7GB)
-- **Health Check**: Validates Ollama is running with `ollama list` command
+- **Persistence**: `ollama_data` Docker volume (~4.7GB)
+- **Health Check**: `ollama list` command validation
 
-### 2. `model-init` Container
+#### 2. `model-init` Container
 - **Image**: `ollama/ollama:latest`
-- **Purpose**: One-time initialization container that pulls the Hermes 3 model
-- **Lifecycle**: Runs once on first startup, exits after model download completes
-- **Dependency**: Waits for `ollama` service to be healthy before executing
+- **Purpose**: One-time model download
+- **Lifecycle**: Runs once, exits after completion
+- **Dependency**: Waits for `ollama` health check
 
-### 3. `bot` Container
+#### 3. `bot` Container  
 - **Image**: Built from local Dockerfile (Python 3.11-slim)
-- **Purpose**: Runs the Telethon-based Telegram userbot
-- **Dependencies**: Waits for `model-init` to complete successfully
-- **Persistence**: Mounts `./session/` directory to persist Telegram login session
-- **Interactive**: Configured with `stdin_open` and `tty` for initial login flow
+- **Purpose**: Runs Telethon-based Telegram bot
+- **Dependencies**: Waits for `model-init` completion
+- **Persistence**: Mounts `./session/` for auth
+- **Interactive**: Configured for terminal I/O
 
-## Key Components
+---
 
-### Python Application (`main.py`)
+## Core Application (`src/main.py`)
 
-**Framework**: Telethon (Telegram client library)
+### Framework
+**Telethon** - Python Telegram client library
 
-**Core Functionality**:
-- Connects to Telegram as a userbot (using your own Telegram account)
-- Monitors "Saved Messages" chat for new messages
-- Sends user messages to Ollama's Hermes 3 model
-- Posts AI responses back to Saved Messages with 🤖 prefix
-- Maintains conversation history (last 20 messages) in memory
+### Key Features
 
-**Important Features**:
-1. **Self-reply prevention**: Bot ignores messages starting with 🤖 to avoid infinite loops
-2. **Typing indicator**: Shows "typing..." while waiting for AI response
-3. **Error handling**: Gracefully handles Ollama connection failures
-4. **Session persistence**: Stores Telegram auth in `session/hermes_userbot.session`
+1. **Bot Account Mode**
+   - Authenticates with bot token (from @BotFather)
+   - Appears as @reysablue_bot (not personal account)
+   - Works in group chats
 
-**Configuration**:
-- `TG_API_ID` and `TG_API_HASH`: Required Telegram API credentials
-- `OLLAMA_URL`: Ollama API endpoint (default: `http://ollama:11434/api/chat`)
-- `OLLAMA_MODEL`: Model name (default: `hermes3`)
-- `MAX_HISTORY_MESSAGES`: Conversation context window (default: 20 messages)
+2. **Message Handling**
+   - Listens to configured chats (via `ALLOWED_CHATS`)
+   - Responds to all messages (Privacy Mode OFF)
+   - Ignores own messages (prevents loops)
+   - Shows typing indicator during processing
 
-### Dependencies (`requirements.txt`)
+3. **Conversation Management**
+   - Per-chat conversation history (in-memory)
+   - Maintains last 20 messages for context
+   - Separate history per chat ID
 
-```
-telethon>=1.36    # Telegram client library
-python-dotenv>=1.0  # Environment variable management
-httpx>=0.27       # Async HTTP client for Ollama API
-```
+4. **AI Integration**
+   - Sends messages to Ollama via HTTP API
+   - Uses Hermes 3 model for responses
+   - Handles errors gracefully (connection failures, timeouts)
+
+### Configuration
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `BOT_TOKEN` | Bot authentication | - (required) |
+| `TG_API_ID` | Telegram API ID | - (required) |
+| `TG_API_HASH` | Telegram API hash | - (required) |
+| `ALLOWED_CHATS` | Comma-separated chat IDs | `-5556749038` |
+| `OLLAMA_URL` | Ollama API endpoint | `http://ollama:11434/api/chat` |
+| `OLLAMA_MODEL` | Model name | `hermes3` |
+
+---
 
 ## Data Flow
 
 ```
-User sends message in Telegram Saved Messages
+User sends message in Telegram group
          ↓
-Telethon bot receives event (main.py)
+Bot receives event (src/main.py)
          ↓
-Message added to conversation history
+Checks: Not own message? → Yes, process
          ↓
-HTTP POST to Ollama API (http://ollama:11434/api/chat)
+Removes bot mentions from text (cleanup)
          ↓
-Hermes 3 model generates response
+Retrieves chat-specific conversation history
          ↓
-Response added to history
+HTTP POST to Ollama (http://ollama:11434/api/chat)
+  - Includes system prompt
+  - Includes last 20 messages
+  - Request timeout: 120s
          ↓
-Bot posts reply with 🤖 prefix in Saved Messages
+Hermes 3 generates response
+         ↓
+Appends to conversation history
+         ↓
+Bot sends reply in Telegram
 ```
 
-## Authentication & Security
+---
 
-### First Run (Interactive Login)
-- Run `docker compose up` (without `-d` flag)
-- Telethon prompts for phone number in terminal
-- Enter Telegram login code received on your phone
-- Session file created: `./session/hermes_userbot.session`
-- Subsequent runs use persisted session (no re-login needed)
+## Authentication
 
-### Credentials Required
-- **Telegram API credentials**: Obtain from https://my.telegram.org → API development tools
-- Both `TG_API_ID` (integer) and `TG_API_HASH` (string) must be set in `.env`
+### Bot Setup (One-time)
+1. Message @BotFather on Telegram
+2. Create bot with `/newbot`
+3. Get bot token
+4. **Disable Privacy Mode** (important!)
+   - @BotFather → /mybots → Your Bot → Bot Settings → Group Privacy → Turn OFF
+5. Add token to `.env`
+6. Add bot to Telegram group
 
-## Deployment & Operations
-
-### Initial Setup
+### First Run
 ```bash
-cd chatbot/
+docker compose up  # Creates session file automatically
+```
+
+Session file: `./session/reysa_bot.session`  
+Persists across restarts (no re-auth needed)
+
+---
+
+## Dependencies
+
+### Python Packages (`requirements.txt`)
+```
+telethon>=1.36      # Telegram client library
+python-dotenv>=1.0  # Environment variable management
+httpx>=0.27         # Async HTTP client for Ollama API
+```
+
+### External Services
+- **Telegram Bot API** - Bot authentication and messaging
+- **Ollama** - Local LLM inference engine
+- **Hermes 3 Model** - 8B parameter LLM from Nous Research
+
+---
+
+## Deployment
+
+### Local Development
+```bash
+# Setup
 cp .env.example .env
-# Edit .env with your Telegram credentials
-docker compose up  # Interactive first run
+# Edit .env with credentials
+
+# Run locally
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m src.main
 ```
 
-### Normal Usage
+### Docker Production
 ```bash
-docker compose up -d          # Start in background
-docker compose logs -f bot    # Watch bot logs
-docker compose down           # Stop all services
+# Start
+docker compose up -d
+
+# Monitor
+docker compose logs -f bot
+
+# Stop
+docker compose down
 ```
 
-### Data Persistence
-- **Ollama model weights**: Docker volume `ollama_data` (survives restarts)
-- **Telegram session**: Host directory `./session/` (survives restarts)
-- **Conversation history**: In-memory only (resets on bot container restart)
+### Helper Script
+```bash
+./start_bot.sh  # Validates config and starts bot
+```
+
+---
+
+## Data Persistence
+
+| Data | Storage | Survives Restart? |
+|------|---------|-------------------|
+| Model weights | Docker volume `ollama_data` | ✅ Yes |
+| Session auth | Host directory `./session/` | ✅ Yes |
+| Conversation history | In-memory dict | ❌ No |
+
+**Note**: Conversation history resets on bot restart. For persistence, see BACKLOGS.md → PERS-001.
+
+---
 
 ## Platform Considerations
 
-### macOS/Apple Silicon Notes
-- Ollama runs in Docker container using **CPU only** (no GPU passthrough on macOS)
-- Performance slower than native Ollama installation
-- Hermes 3 8B still usable on M-series chips despite CPU limitation
-- Alternative: Run Ollama natively on Mac for GPU acceleration
+### macOS/Apple Silicon
+- Ollama runs in container using **CPU only**
+- No GPU passthrough on macOS Docker
+- Performance adequate but slower than native
+- Alternative: Run Ollama natively for GPU acceleration
 
 ### Model Size
-- Hermes 3 model: ~4.7GB download
-- First run requires network download time
-- Stored persistently in Docker volume
+- Hermes 3: ~4.7GB download
+- First run requires network download
+- Stored in Docker volume persistently
 
-## Customization Options
+---
 
-### Changing Models
-1. Edit `OLLAMA_MODEL` in `.env`
-2. Update `entrypoint` in `docker-compose.yml` → `model-init` service
-3. Run `docker compose up` to pull new model
+## Privacy Mode
 
-### Adjusting Behavior
-- **System prompt**: Modify `SYSTEM_PROMPT` in `main.py`
-- **History length**: Change `MAX_HISTORY_MESSAGES`
-- **Bot prefix**: Update `BOT_PREFIX` to change emoji/marker
-- **Timeouts**: Adjust `httpx.AsyncClient(timeout=...)` value
+**Important Configuration**: Privacy Mode controls what messages bots can see.
 
-## Troubleshooting
+### Privacy Mode ON (Default)
+- Bot only sees:
+  - Messages mentioning it (@reysablue_bot)
+  - Replies to its messages
+  - Commands (/start, /help)
+- ❌ Cannot see regular group messages
 
-### Common Issues
+### Privacy Mode OFF (Current Setup)
+- Bot sees **all messages** in group
+- Responds to every message
+- More conversational
+- Configure via @BotFather
 
-**"Can't reach Ollama"**
-- Root cause: `ollama` container not running
-- Check: `docker compose ps`
-- Fix: `docker compose up -d`
+See [docs/PRIVACY-MODE-GUIDE.md](docs/PRIVACY-MODE-GUIDE.md) for details.
 
-**`model-init` Fails**
-- Root cause: Network issue during 4.7GB model download
-- Check: `docker compose logs model-init`
-- Fix: Re-run `docker compose up` to retry
+---
 
-**Login Code Never Arrives**
-- Root cause: Running in detached mode blocks terminal prompts
-- Fix: Run `docker compose up` (without `-d`) for interactive login
+## Security
 
-**Bot Replies to Itself (Loop)**
-- Should not happen due to `BOT_PREFIX` check
-- Verify bot messages start with 🤖 character
+### Session Files
+- Contains bot authentication tokens
+- File permissions: `600` (owner read/write only)
+- Directory permissions: `700`
+- Git-ignored (never committed)
+- Set automatically by `scripts/entrypoint.sh`
 
-## Development Notes
+### Environment Variables
+- `.env` file git-ignored
+- Sensitive data never in code
+- Validation on startup with clear errors
 
-### Code Structure
-- **Async/await pattern**: Uses `asyncio` for concurrent I/O
-- **Event-driven**: Telethon's `@client.on(events.NewMessage)` decorator
-- **Type hints**: Minimal typing, could be enhanced
-- **Error handling**: Basic try/except, could be more specific
+### Bot Permissions
+- Bot runs with minimal Telegram permissions
+- Can send/receive messages in allowed chats
+- Cannot access chats not in `ALLOWED_CHATS`
 
-### Potential Enhancements
-- Add conversation reset command
-- Support multiple chat contexts
-- Implement streaming responses (Ollama supports SSE)
-- Add rate limiting or usage tracking
-- Store conversation history persistently (database/file)
-- Support multiple models with selection command
-- Add conversation export functionality
+---
 
 ## File Structure
 
 ```
 chatbot/
-├── PROJECT-CONTEXT.md         # This file - main knowledge hub
+├── PROJECT-CONTEXT.md         # This file
 ├── README.md                  # Quick start guide
-├── docs/                      # Additional documentation
+├── docs/                      # Documentation
+│   ├── INDEX.md               # Documentation index
 │   ├── BACKLOGS.md            # Feature roadmap
-│   ├── CHANGELOG.md           # Version history
-│   ├── CRITICAL-FIX-SUMMARY.md  # Bug fix details
-│   ├── GROUP-SETUP-GUIDE.md   # Group chat setup
-│   ├── STRUCTURE.md           # Project organization
-│   ├── REORGANIZATION-SUMMARY.md  # Migration guide
-│   ├── ORGANIZATION-COMPLETE.md   # Organization summary
-│   ├── UX-004-ASSESSMENT.md   # Technical assessment
-│   └── UX-004-IMPLEMENTATION-COMPLETE.md  # Implementation
+│   ├── QUICK-START.md         # Detailed setup
+│   ├── TROUBLESHOOTING.md     # Common issues
+│   └── PRIVACY-MODE-GUIDE.md  # Privacy configuration
 ├── src/                       # Source code
-│   ├── __init__.py            # Package initialization
+│   ├── __init__.py
 │   └── main.py                # Bot application
 ├── scripts/                   # Utility scripts
-│   ├── entrypoint.sh          # Docker entrypoint with security
-│   └── get_chat_id.py         # Find Telegram chat IDs
-├── tests/                     # Test suite
-│   ├── __init__.py
-│   └── test_eventloop.py      # Event loop verification
+│   ├── entrypoint.sh          # Docker entrypoint
+│   ├── get_chat_id.py         # Find chat IDs
+│   └── check_bot_permissions.py  # Verify access
 ├── session/                   # Telegram auth (git-ignored)
-│   └── hermes_userbot.session # Created on first run
+│   └── reysa_bot.session      # Created on first run
 ├── logs/                      # Runtime logs (git-ignored)
-│   └── .gitkeep
 ├── .dockerignore              # Docker build exclusions
-├── .env                       # Environment variables (git-ignored)
+├── .env                       # Config (git-ignored)
 ├── .env.example               # Config template
 ├── .gitignore                 # Git exclusions
 ├── Dockerfile                 # Container definition
-├── docker-compose.yml         # Multi-container orchestration
+├── docker-compose.yml         # Container orchestration
 ├── requirements.txt           # Python dependencies
-└── README.md                  # Quick start guide
+└── start_bot.sh               # Startup helper script
 ```
 
-## External Dependencies
+---
 
-- **Telegram API**: Requires active Telegram account and API credentials
-- **Ollama**: LLM inference engine (runs in container)
-- **Hermes 3 Model**: 8B parameter model from Nous Research
-- **Docker**: Container runtime required on host machine
+## Customization
+
+### Change Models
+1. Edit `OLLAMA_MODEL` in `.env`
+2. Update `docker-compose.yml` → `model-init` → `entrypoint`
+3. Run `docker compose up` to pull new model
+
+### Adjust Bot Behavior
+- **System prompt**: Modify `SYSTEM_PROMPT` in `main.py`
+- **History length**: Change `MAX_HISTORY_MESSAGES` (default: 20)
+- **Timeout**: Adjust `httpx.AsyncClient(timeout=...)` (default: 120s)
+
+### Add Commands
+See BACKLOGS.md → UX-001 for planned command system.
+
+---
+
+## Development Notes
+
+### Code Style
+- **Async/await** pattern throughout
+- **Event-driven** via Telethon decorators
+- **Type hints** minimal (improvement opportunity)
+- **Error handling** basic try/except (could be more specific)
+
+### Testing
+- No automated tests currently (see BACKLOGS.md → TEST-001)
+- Manual testing with local Telegram groups
+- Helper scripts for verification
+
+---
+
+## Known Limitations
+
+1. **No persistent history** - Resets on restart
+2. **CPU-only on macOS** - Slower inference
+3. **In-memory storage** - Not suitable for high traffic
+4. **Single bot instance** - No load balancing
+5. **No rate limiting** - Can be overwhelmed
+6. **No metrics** - No usage tracking
+
+See [docs/BACKLOGS.md](docs/BACKLOGS.md) for planned improvements.
+
+---
 
 ## Use Cases
 
-- Personal AI assistant within Telegram
-- Quick AI consultations without leaving Telegram app
-- Private AI conversations (everything runs locally)
+- AI assistant in Telegram groups
+- Private AI conversations (runs locally)
+- Team chat bot with custom knowledge
+- Quick AI consultations without leaving Telegram
 - Testing/prototyping conversational AI
-- Learning Telegram userbot development
 
-## Limitations
+---
 
-- Only monitors Saved Messages (not other chats)
-- CPU-only inference on macOS (slower responses)
-- Conversation history resets on restart
-- Requires Docker and ~5GB disk space
-- Userbot may violate Telegram ToS (use at own risk)
+## Troubleshooting
+
+See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for detailed solutions.
+
+**Quick fixes**:
+- Bot doesn't respond → Check Privacy Mode is OFF
+- "Can't reach Ollama" → `docker compose ps` and restart services
+- Session errors → Delete `session/reysa_bot.session*` and restart
+
+---
+
+## Next Steps
+
+See [docs/BACKLOGS.md](docs/BACKLOGS.md) for:
+- Planned features
+- Improvement roadmap
+- Known issues
+- Contribution opportunities
+
+---
+
+**Version**: 1.0  
+**Last Updated**: 2026-09-02  
+**Bot**: @reysablue_bot (Reysa)  
+**Status**: Production Ready
