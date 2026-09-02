@@ -24,6 +24,10 @@ env/
 # State file
 .last_summary
 
+# Agent stats reports
+agent_stats.md
+agent_stats.json
+
 # Summaries (optional - uncomment if you don't want to track summaries)
 # summaries/*.md
 

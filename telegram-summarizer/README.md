@@ -138,6 +138,25 @@ See [docs/USAGE.md](docs/USAGE.md) for detailed configuration options.
 - Adjust `DEFAULT_DAYS` based on your needs (7 for weekly, 14 for bi-weekly)
 - Add or remove chats in `.env` anytime
 - Check `summaries/` folder for historical records
+- State is tracked automatically - only new messages are summarized
+
+## 📊 Agent Statistics
+
+Track your Claude agent usage and costs:
+
+```bash
+python3 agent_stats.py
+```
+
+This generates:
+- `agent_stats.md` - Human-readable report
+- `agent_stats.json` - Machine-readable data
+
+Shows:
+- Total sessions created
+- Total cost (if available)
+- Token usage statistics
+- Session details with timestamps
 
 ## 🐛 Troubleshooting
 
