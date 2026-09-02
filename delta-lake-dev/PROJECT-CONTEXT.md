@@ -285,3 +285,10 @@ staleness is inherent to how the extension keys itself, not something `entrypoin
   `spark.driver.memory=4g`, so two concurrent drivers is already tight.
 - **`docker compose exec` runs a second driver.** It does not attach to the Connect server's JVM.
   Notebook kernel + a `docker compose exec pytest` + the Connect server = three JVMs.
+
+## EVALUATION FROM USER
+
+### Framework
+
+1. Create a triton-like framework convenient for user to create catalog, manage resource, and script in a neat, tidy manner.
+2. Create a unit-test with pytest with csv as the local data input.
