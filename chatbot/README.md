@@ -120,7 +120,9 @@ chatbot/
 - **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** - Common issues & solutions
 - **[PRIVACY-MODE-GUIDE.md](docs/PRIVACY-MODE-GUIDE.md)** - Configure response modes
 - **[PROJECT-CONTEXT.md](PROJECT-CONTEXT.md)** - Architecture & design decisions
-- **[BACKLOGS.md](docs/BACKLOGS.md)** - Feature roadmap
+- **[BACKLOGS.md](docs/BACKLOGS.md)** - Open work (shipped items are in `docs/changelogs/`)
+- **[DOCUMENTATION-STANDARDS.md](docs/DOCUMENTATION-STANDARDS.md)** - Where a new document belongs
+- **[changelogs/](docs/changelogs/)** - History and shipped features
 - **[INDEX.md](docs/INDEX.md)** - Full documentation index
 
 ---

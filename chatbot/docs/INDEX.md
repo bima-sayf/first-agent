@@ -20,9 +20,18 @@ Understand the architecture and technical details.
 - **[QUICK-START.md](QUICK-START.md)** - Detailed setup walkthrough
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
 - **[PRIVACY-MODE-GUIDE.md](PRIVACY-MODE-GUIDE.md)** - Configure bot response modes
+- **[DOCUMENTATION-STANDARDS.md](DOCUMENTATION-STANDARDS.md)** - Where a new document belongs, and
+  when not to write one
 
 ### Planning & Development
-- **[BACKLOGS.md](BACKLOGS.md)** - Feature roadmap and improvement tracking
+- **[BACKLOGS.md](BACKLOGS.md)** - Open work only (shipped items live in `changelogs/`)
+- **[IMPLEMENTATION-PLAN-codeviz-knowledge.md](IMPLEMENTATION-PLAN-codeviz-knowledge.md)** - Local
+  chat shell, code-viz knowledge, and critical answering (proposed, not started)
+
+### History
+- **[changelogs/](changelogs/)** - Summaries and shipped-feature records
+  - `features-shipped-history.md` - what shipped, newest first
+  - `cleanup-2026-09-02-initial-state.md` - the v1.0 cleanup
 
 ---
 
@@ -66,6 +75,8 @@ Understand the architecture and technical details.
 - **Change response mode** → [PRIVACY-MODE-GUIDE.md](PRIVACY-MODE-GUIDE.md)
 - **Understand architecture** → [`../PROJECT-CONTEXT.md`](../PROJECT-CONTEXT.md)
 - **See what's planned** → [BACKLOGS.md](BACKLOGS.md)
+- **Test without Telegram / teach the bot code-viz** →
+  [IMPLEMENTATION-PLAN-codeviz-knowledge.md](IMPLEMENTATION-PLAN-codeviz-knowledge.md)
 - **Find chat IDs** → `../scripts/get_chat_id.py`
 - **Check bot permissions** → `../scripts/check_bot_permissions.py`
 
@@ -73,20 +84,24 @@ Understand the architecture and technical details.
 
 ## 📝 Documentation Standards
 
+Full rules: **[DOCUMENTATION-STANDARDS.md](DOCUMENTATION-STANDARDS.md)**. The short version:
+
+1. Summaries go in `docs/changelogs/`, named `{context}-{date}-{detail}.md`
+2. `docs/` holds current-state guides only
+3. Navigate by `PROJECT-CONTEXT.md` and this index
+4. Only `README.md` and `PROJECT-CONTEXT.md` live at the project root
+
+**Do not write a summary document for routine work** — the commit message is the record. Changelog
+entries are for milestones, migrations and restructures.
+
 ### Purpose
-Each document serves a specific purpose:
 - **README.md** - Project overview and quick start
+- **PROJECT-CONTEXT.md** - Technical architecture
 - **QUICK-START.md** - Detailed setup instructions
 - **TROUBLESHOOTING.md** - Problem resolution
 - **PRIVACY-MODE-GUIDE.md** - Feature configuration
-- **PROJECT-CONTEXT.md** - Technical architecture
-- **BACKLOGS.md** - Development roadmap
-
-### Style
-- Clear, concise headings
-- Step-by-step instructions where applicable
-- Code examples for technical content
-- Links to related documentation
+- **BACKLOGS.md** - Open work only
+- **changelogs/** - History and shipped features
 
 ---
 

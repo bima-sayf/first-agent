@@ -5,32 +5,35 @@ This document tracks improvements, enhancements, and future features for the Rey
 
 ---
 
-## 🟢 Completed
+Shipped work is **not** listed here — see
+[`changelogs/features-shipped-history.md`](changelogs/features-shipped-history.md). A backlog that
+lists finished items stops being trusted.
 
-### CRIT-001: Telethon Event Loop Conflicts
-**Status**: ✅ Done  
-**Completed**: 2026-09-01  
-**Description**: Fixed fatal asyncio event loop error causing bot crashes.
+---
 
-### SEC-001: Secure Session File Handling
-**Status**: ✅ Done  
-**Completed**: 2026-09-01  
-**Description**: Session files secured with proper permissions and git exclusions.
+## 🔴 Critical
 
-### SEC-002: Environment Variable Validation
-**Status**: ✅ Done  
-**Completed**: 2026-09-01  
-**Description**: Added startup validation with clear error messages for missing/invalid configuration.
+### TRUST-001: Refuse to answer on unresolved identifiers
+**Status**: 🔴 Open
+**Effort**: Medium
+**Depends on**: the lineage tools in
+[`IMPLEMENTATION-PLAN-codeviz-knowledge.md`](IMPLEMENTATION-PLAN-codeviz-knowledge.md) Phase 2
 
-### UX-004: Group Chat Support
-**Status**: ✅ Done  
-**Completed**: 2026-09-01  
-**Description**: Bot works in Telegram groups with per-chat conversation history.
+**Description**: When asked about a column or catalog that does not exist, the bot answers anyway
+from assumption. A confident answer about a misspelled column is worse than no answer, because
+nothing in the reply reveals the mistake.
 
-### UX-005: Bot Account Mode
-**Status**: ✅ Done  
-**Completed**: 2026-09-01  
-**Description**: Bot runs as @reysablue_bot (Reysa) instead of personal account.
+**Assessment and design**: see
+[`IMPLEMENTATION-PLAN-codeviz-knowledge.md` § Part 3](IMPLEMENTATION-PLAN-codeviz-knowledge.md).
+The short version: gate the model behind a resolver that runs *before* generation, reusing
+`resolve()` and `suggest()` from code-viz's `tools/compare_columns.py`, and return ranked candidates
+instead of prose when a name does not resolve.
+
+**Acceptance criteria**:
+- a misspelled column produces a candidate list, never an answer
+- a well-formed but non-existent name produces an explicit "no match", never an answer
+- answers about the two template catalogs are labelled as unverified
+- the guarantee holds without relying on the model choosing to behave
 
 ---
 
@@ -406,21 +409,10 @@ This document tracks improvements, enhancements, and future features for the Rey
 
 ## 📊 Statistics
 
-**Total Items**: 29  
-**Completed**: 5 ✅  
-**High Priority**: 5  
-**Medium Priority**: 9  
-**Low Priority**: 8  
-**Future Ideas**: 14  
-
-**Recent Completions**:
-- 2026-09-01: UX-005 - Bot Account Mode
-- 2026-09-01: UX-004 - Group Chat Support
-- 2026-09-01: CRIT-001 - Event Loop Fix
-- 2026-09-01: SEC-001 - Secure Sessions
-- 2026-09-01: SEC-002 - Environment Validation
+**Open items**: 25 — 1 critical · 4 high · 9 medium · 8 low, plus future ideas  
+**Shipped**: see [`changelogs/features-shipped-history.md`](changelogs/features-shipped-history.md)
 
 ---
 
-**Last Updated**: 2026-09-02  
+**Last Updated**: 2026-09-03  
 **Status**: Production v1.0
